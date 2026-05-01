@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN"
+  "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <!-- Eindeutiger Name des Jobs -->
+    <key>Label</key>
+    <string>com.tiktokmonitoring</string>
+
+    <!-- Was ausgeführt wird -->
+    <key>ProgramArguments</key>
+    <array>
+        <string>/bin/bash</string>
+        <string>/Users/judithdenkmayr/Claude Projektordner/tiktok_monitoring/run.sh</string>
+    </array>
+
+    <!-- Täglich um 07:00 Uhr -->
+    <key>StartCalendarInterval</key>
+    <dict>
+        <key>Hour</key>
+        <integer>7</integer>
+        <key>Minute</key>
+        <integer>0</integer>
+    </dict>
+
+    <!-- Logs (zusätzlich zum internen Log in run.sh) -->
+    <key>StandardOutPath</key>
+    <string>/Users/judithdenkmayr/Claude Projektordner/tiktok_monitoring/logs/launchd_out.log</string>
+    <key>StandardErrorPath</key>
+    <string>/Users/judithdenkmayr/Claude Projektordner/tiktok_monitoring/logs/launchd_err.log</string>
+
+    <!-- Job nur starten wenn Mac eingeloggt ist -->
+    <key>RunAtLoad</key>
+    <false/>
+</dict>
+</plist>

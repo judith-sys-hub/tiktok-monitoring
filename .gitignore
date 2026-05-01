@@ -1,0 +1,16 @@
+# Token & persönliche Konfiguration — niemals ins Repo
+config.json
+
+# Gesammelte Daten (lokal bleiben)
+dashboards/*.json
+
+# Logs
+logs/
+
+# macOS
+.DS_Store
+
+# Python
+__pycache__/
+*.pyc
+.venv/

@@ -1,0 +1,688 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>TikTok Trending — Kärnten & Steiermark</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: #f0f2f5;
+      color: #1a1a2e;
+      font-size: 14px;
+    }
+
+    header {
+      background: #1a1a2e;
+      color: #fff;
+      padding: 20px 32px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 3px solid #e63946;
+    }
+
+    header h1 {
+      font-size: 20px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+    }
+
+    header .meta {
+      font-size: 12px;
+      color: #a0a8c0;
+      text-align: right;
+      line-height: 1.6;
+    }
+
+    header .meta strong {
+      color: #fff;
+    }
+
+    .badge-region {
+      display: inline-block;
+      background: #e63946;
+      color: #fff;
+      font-size: 10px;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 3px;
+      letter-spacing: 0.5px;
+      margin-right: 4px;
+    }
+
+    main {
+      max-width: 1100px;
+      margin: 28px auto;
+      padding: 0 20px;
+    }
+
+    .toolbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    .toolbar h2 {
+      font-size: 13px;
+      color: #555;
+      font-weight: 500;
+    }
+
+    .toolbar .timestamp {
+      font-size: 12px;
+      color: #888;
+    }
+
+    .card {
+      background: #fff;
+      border-radius: 8px;
+      border: 1px solid #e2e6ea;
+      margin-bottom: 16px;
+      display: grid;
+      grid-template-columns: 56px 160px 1fr;
+      overflow: hidden;
+      transition: box-shadow 0.15s;
+    }
+
+    .card:hover {
+      box-shadow: 0 4px 16px rgba(0,0,0,0.09);
+    }
+
+    /* Rank */
+    .rank {
+      background: #1a1a2e;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+      font-weight: 800;
+      letter-spacing: -1px;
+    }
+
+    .rank.top3 {
+      background: #e63946;
+    }
+
+    /* Thumbnail */
+    .thumb {
+      background: #0d0d0d;
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-end;
+      min-height: 140px;
+    }
+
+    .thumb img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      position: absolute;
+      top: 0; left: 0;
+      opacity: 0.85;
+    }
+
+    .thumb .placeholder {
+      width: 100%;
+      height: 100%;
+      position: absolute;
+      top: 0; left: 0;
+      background: linear-gradient(135deg, #1a1a2e 0%, #2d2d44 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .thumb .placeholder svg {
+      opacity: 0.3;
+    }
+
+    .thumb .play-btn {
+      position: relative;
+      z-index: 2;
+      margin-bottom: 10px;
+    }
+
+    .thumb a {
+      display: inline-block;
+      background: rgba(230,57,70,0.9);
+      color: #fff;
+      text-decoration: none;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 5px 12px;
+      border-radius: 4px;
+      letter-spacing: 0.3px;
+      position: relative;
+      z-index: 2;
+      margin-bottom: 8px;
+    }
+
+    .thumb a:hover {
+      background: #e63946;
+    }
+
+    /* Content */
+    .content {
+      padding: 14px 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .content .title {
+      font-size: 15px;
+      font-weight: 700;
+      color: #1a1a2e;
+      line-height: 1.3;
+    }
+
+    .content .synopsis {
+      font-size: 13px;
+      color: #444;
+      line-height: 1.5;
+    }
+
+    .meta-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px 16px;
+    }
+
+    .meta-item {
+      display: flex;
+      flex-direction: column;
+      min-width: 72px;
+    }
+
+    .meta-item .label {
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: #999;
+      font-weight: 600;
+    }
+
+    .meta-item .value {
+      font-size: 13px;
+      font-weight: 600;
+      color: #1a1a2e;
+      margin-top: 1px;
+    }
+
+    .hashtags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+    }
+
+    .hashtag {
+      background: #f0f2f5;
+      color: #1a1a2e;
+      font-size: 11px;
+      font-weight: 600;
+      padding: 3px 8px;
+      border-radius: 4px;
+      border: 1px solid #dce0e8;
+    }
+
+    .more-notes {
+      background: #fffbea;
+      border: 1px solid #f0e080;
+      border-radius: 5px;
+      padding: 8px 10px;
+      font-size: 12px;
+      color: #5a4a00;
+      line-height: 1.5;
+    }
+
+    .more-notes .note-label {
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: #a08000;
+      margin-bottom: 4px;
+    }
+
+    .more-notes .note-text {
+      font-style: italic;
+    }
+
+    .empty-note {
+      color: #bbb;
+      font-style: italic;
+    }
+
+    .account-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      background: #f0f2f5;
+      border: 1px solid #dce0e8;
+      border-radius: 20px;
+      padding: 3px 10px 3px 6px;
+      font-size: 12px;
+      font-weight: 600;
+      color: #1a1a2e;
+    }
+
+    .account-chip .at {
+      color: #e63946;
+    }
+
+    footer {
+      text-align: center;
+      padding: 24px;
+      font-size: 11px;
+      color: #aaa;
+    }
+
+    .import-btn {
+      display: inline-block;
+      background: #e63946;
+      color: #fff;
+      font-size: 12px;
+      font-weight: 700;
+      padding: 6px 14px;
+      border-radius: 5px;
+      cursor: pointer;
+      letter-spacing: 0.3px;
+      transition: background 0.15s;
+    }
+
+    .import-btn:hover { background: #c1121f; }
+
+    @media print {
+      body { background: #fff; }
+      .card { break-inside: avoid; }
+      .import-btn { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div>
+    <h1>TikTok Trending</h1>
+    <div style="margin-top:6px;">
+      <span class="badge-region">KÄRNTEN</span>
+      <span class="badge-region">STEIERMARK</span>
+    </div>
+  </div>
+  <div class="meta">
+    <div><strong>Zeitraum:</strong> letzte 24 Stunden</div>
+    <div><strong>Stand:</strong> <span id="stand">—</span></div>
+    <div><strong>Themen:</strong> Chronik · Blaulicht · Kuriosum · Lokal</div>
+  </div>
+</header>
+
+<main>
+  <div class="toolbar">
+    <h2>Top 15 Videos aus der Region</h2>
+    <div style="display:flex;align-items:center;gap:12px;">
+      <span class="timestamp">Letzte Aktualisierung: <span id="ts">—</span></span>
+      <label class="import-btn">
+        JSON laden
+        <input type="file" id="jsonImport" accept=".json" style="display:none;" />
+      </label>
+    </div>
+  </div>
+
+  <div id="feed"></div>
+</main>
+
+<footer>
+  TikTok Monitoring · Newsroom · Kärnten & Steiermark · Intern
+</footer>
+
+<script>
+  // Datum setzen
+  const now = new Date();
+  const fmt = d => d.toLocaleString('de-AT', { day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit' });
+  document.getElementById('stand').textContent = fmt(now);
+  document.getElementById('ts').textContent = fmt(now);
+
+  // -------------------------------------------------------
+  // JSON-Import: data_template.json auswählen → Dashboard
+  // wird automatisch neu gerendert.
+  // -------------------------------------------------------
+  document.getElementById('jsonImport').addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = function(ev) {
+      try {
+        const json = JSON.parse(ev.target.result);
+        const videos = json.videos || json;
+        if (json.meta && json.meta.stand) {
+          const d = new Date(json.meta.stand);
+          document.getElementById('stand').textContent = fmt(d);
+          document.getElementById('ts').textContent = fmt(d);
+        }
+        renderFeed(videos);
+      } catch(err) {
+        alert('JSON konnte nicht geladen werden: ' + err.message);
+      }
+    };
+    reader.readAsText(file);
+  });
+
+  // -------------------------------------------------------
+  // FALLBACK-DATEN (Beispieldaten — werden durch JSON ersetzt)
+  // Felder: rank, title, url, thumbnail (optional), account,
+  //         views, likes, shares, comments, uploaded,
+  //         region, hashtags[], synopsis, notes
+  // -------------------------------------------------------
+  const data = [
+    {
+      rank: 1,
+      title: "Feuerwehreinsatz auf der A9 nach LKW-Brand",
+      url: "https://www.tiktok.com/@beispiel/video/0000000000001",
+      thumbnail: "",
+      account: "liveticker_graz",
+      views: "284.000",
+      likes: "12.400",
+      shares: "3.200",
+      comments: "890",
+      uploaded: "vor 4 Std.",
+      region: "Steiermark",
+      hashtags: ["#blaulicht", "#steiermark", "#feuerwehr", "#a9", "#breaking"],
+      synopsis: "Ein brennender LKW auf der Phyrnautobahn A9 sorgte für vollständige Sperre Richtung Graz. Videos zeigen meterhohe Flammen und dichten Rauch. Die Feuerwehr Liezen war mit 5 Fahrzeugen im Einsatz.",
+      notes: "Gutes Bildmaterial. Überprüfen ob offizielle Bestätigung der BH Liezen vorliegt."
+    },
+    {
+      rank: 2,
+      title: "Wildschwein in Klagenfurter Innenstadt",
+      url: "https://www.tiktok.com/@beispiel/video/0000000000002",
+      thumbnail: "",
+      account: "klagenfurt_daily",
+      views: "196.000",
+      likes: "18.700",
+      shares: "5.100",
+      comments: "2.300",
+      uploaded: "vor 7 Std.",
+      region: "Kärnten",
+      hashtags: ["#klagenfurt", "#tierrettung", "#wildtier", "#meanwhileinaustria"],
+      synopsis: "Ein Wildschwein lief am frühen Morgen durch die Fußgängerzone Klagenfurts. Polizei und Tierrettung waren im Einsatz. Das Tier wurde schließlich in den Stadtpark getrieben und eingefangen.",
+      notes: ""
+    },
+    {
+      rank: 3,
+      title: "Supermarkt-Zwischenfall in Villach — Rolltreppe außer Kontrolle",
+      url: "https://www.tiktok.com/@beispiel/video/0000000000003",
+      thumbnail: "",
+      account: "villach_lokal",
+      views: "143.000",
+      likes: "9.800",
+      shares: "2.700",
+      comments: "1.100",
+      uploaded: "vor 11 Std.",
+      region: "Kärnten",
+      hashtags: ["#villach", "#supermarkt", "#kuriosum", "#österreichmeme"],
+      synopsis: "Eine defekte Rolltreppe in einem Villacher Einkaufszentrum führte zu kuriosen Szenen: Einkaufswagen rollten selbstständig, mehrere Kunden filmten das Chaos. Niemand verletzt.",
+      notes: "Hohe Interaktion, viral-Potenzial. Betreiber für Stellungnahme anfragen."
+    },
+    {
+      rank: 4,
+      title: "Polizeieinsatz am Grazer Hauptplatz",
+      url: "https://www.tiktok.com/@beispiel/video/0000000000004",
+      thumbnail: "",
+      account: "graznews",
+      views: "118.000",
+      likes: "7.200",
+      shares: "1.900",
+      comments: "640",
+      uploaded: "vor 3 Std.",
+      region: "Steiermark",
+      hashtags: ["#graz", "#polizei", "#graznews", "#hauptplatz"],
+      synopsis: "Größerer Polizeieinsatz am Hauptplatz Graz nach gemeldeter Schlägerei. Mehrere Streifenwagen im Einsatz. Lage laut LPD Steiermark unter Kontrolle.",
+      notes: ""
+    },
+    {
+      rank: 5,
+      title: "Bergrettung am Hochschwab — 3 Stunden Einsatz",
+      url: "https://www.tiktok.com/@beispiel/video/0000000000005",
+      thumbnail: "",
+      account: "bergrettung_stmk",
+      views: "97.000",
+      likes: "14.300",
+      shares: "4.200",
+      comments: "780",
+      uploaded: "vor 14 Std.",
+      region: "Steiermark",
+      hashtags: ["#bergrettung", "#hochschwab", "#steiermark", "#bruck"],
+      synopsis: "Zwei Wanderer mussten am Hochschwab geborgen werden. Helikopter und Bergrettung Bruck im Einsatz. Beide Personen leicht verletzt, aber wohlauf.",
+      notes: "Bergrettung hat eigenen TikTok-Account — Original-Video direkt einbinden?"
+    },
+    {
+      rank: 6,
+      title: "Grazer Straßenbahn klemmt Fahrrad ein",
+      url: "https://www.tiktok.com/@beispiel/video/0000000000006",
+      thumbnail: "",
+      account: "urbangraz",
+      views: "84.000",
+      likes: "11.200",
+      shares: "3.100",
+      comments: "1.450",
+      uploaded: "vor 9 Std.",
+      region: "Steiermark",
+      hashtags: ["#grazerstraßenbahn", "#graz", "#kuriosum", "#urbangraz"],
+      synopsis: "Ein Fahrrad wurde in der Jakominigasse zwischen den Türen einer Grazer Straßenbahn eingeklemmt. Verkehrschaos für 20 Minuten. Fahrradbesitzer blieb unverletzt.",
+      notes: "Sehr hohe Kommentaranzahl. Humor-Winkel vorhanden."
+    },
+    {
+      rank: 7,
+      title: "Tierrettung: Reh in Wolfsberg eingezäunt",
+      url: "https://www.tiktok.com/@beispiel/video/0000000000007",
+      thumbnail: "",
+      account: "wolfsberg_lokal",
+      views: "72.000",
+      likes: "8.900",
+      shares: "2.300",
+      comments: "520",
+      uploaded: "vor 18 Std.",
+      region: "Kärnten",
+      hashtags: ["#wolfsberg", "#tierrettung", "#reh", "#kärnten"],
+      synopsis: "Ein Reh hatte sich in einem Privatgarten in Wolfsberg in einem Maschendrahtzaun verfangen. Feuerwehr und Tierrettung befreiten das Tier nach 45 Minuten unverletzt.",
+      notes: ""
+    },
+    {
+      rank: 8,
+      title: "Unfall auf der B67 bei Hartberg",
+      url: "https://www.tiktok.com/@beispiel/video/0000000000008",
+      thumbnail: "",
+      account: "hartberg_news",
+      views: "61.000",
+      likes: "4.100",
+      shares: "980",
+      comments: "310",
+      uploaded: "vor 6 Std.",
+      region: "Steiermark",
+      hashtags: ["#hartberg", "#unfall", "#b67", "#steiermarknews", "#blaulicht"],
+      synopsis: "Frontalkollision zweier PKW auf der B67 nahe Hartberg. Drei Verletzte, darunter ein Kind. Feuerwehr Hartberg und Rotes Kreuz im Einsatz. Straße für 2 Stunden gesperrt.",
+      notes: "Nachfassen bei BH Hartberg-Fürstenfeld für offizielle Zahlen."
+    },
+    {
+      rank: 9,
+      title: "Flashmob in der Villacher Fußgängerzone",
+      url: "https://www.tiktok.com/@beispiel/video/0000000000009",
+      thumbnail: "",
+      account: "villach_vibes",
+      views: "55.000",
+      likes: "7.800",
+      shares: "2.100",
+      comments: "430",
+      uploaded: "vor 12 Std.",
+      region: "Kärnten",
+      hashtags: ["#villach", "#flashmob", "#lokalhumor", "#kärnten"],
+      synopsis: "Spontaner Tanzauftritt von rund 30 Personen in der Villacher Fußgängerzone. Keine Voranmeldung, Veranstalter unbekannt. Hunderte Schaulustige filmen mit.",
+      notes: ""
+    },
+    {
+      rank: 10,
+      title: "Kuh läuft auf Autobahn bei Spittal",
+      url: "https://www.tiktok.com/@beispiel/video/0000000000010",
+      thumbnail: "",
+      account: "kaernten_regional",
+      views: "49.000",
+      likes: "9.200",
+      shares: "3.400",
+      comments: "1.800",
+      uploaded: "vor 20 Std.",
+      region: "Kärnten",
+      hashtags: ["#spittal", "#kärnten", "#meanwhileinaustria", "#autobahn"],
+      synopsis: "Eine entlaufene Kuh sorgte auf der A10 nahe Spittal für gesperrte Fahrbahn. Polizei und Bauer fingen das Tier nach 40 Minuten ein. Keine Verletzten, viel Gelächter im Kommentarfeld.",
+      notes: "Viraler Humorfaktor hoch. #meanwhileinaustria bereits 120k Aufrufe."
+    },
+    {
+      rank: 11,
+      title: "Brand in Weizer Altbau — Mieter gerettet",
+      url: "https://www.tiktok.com/@beispiel/video/0000000000011",
+      thumbnail: "",
+      account: "weiz_aktuell",
+      views: "44.000",
+      likes: "5.500",
+      shares: "1.200",
+      comments: "290",
+      uploaded: "vor 16 Std.",
+      region: "Steiermark",
+      hashtags: ["#weiz", "#brand", "#feuerwehr", "#steiermark", "#blaulicht"],
+      synopsis: "Wohnungsbrand in einem Gründerzeithaus in Weiz. Eine ältere Person musste über die Drehleiter gerettet werden. Feuerwehr Weiz mit 4 Fahrzeugen im Einsatz. Gebäudeschaden erheblich.",
+      notes: ""
+    },
+    {
+      rank: 12,
+      title: "Betrunkener schläft in Leoben auf Gleisen ein",
+      url: "https://www.tiktok.com/@beispiel/video/0000000000012",
+      thumbnail: "",
+      account: "leoben_lokal",
+      views: "38.000",
+      likes: "6.100",
+      shares: "1.800",
+      comments: "970",
+      uploaded: "vor 22 Std.",
+      region: "Steiermark",
+      hashtags: ["#leoben", "#polizei", "#steiermark", "#kuriosum"],
+      synopsis: "Polizei und ÖBB-Sicherheitsdienst wurden alarmiert, weil ein Mann auf den Gleisen im Leobener Bahnhofsbereich schlief. Mann war stark alkoholisiert, blieb unverletzt.",
+      notes: "Ethik-Check: Gesicht unkenntlich? Klären bevor Verwendung."
+    },
+    {
+      rank: 13,
+      title: "Straßenmusiker in Graz spielt viral — 500k Views",
+      url: "https://www.tiktok.com/@beispiel/video/0000000000013",
+      thumbnail: "",
+      account: "grazleben",
+      views: "34.000",
+      likes: "8.700",
+      shares: "2.900",
+      comments: "1.100",
+      uploaded: "vor 21 Std.",
+      region: "Steiermark",
+      hashtags: ["#graz #schlossberg #grazcity #lokalhumor #straßenmusik"],
+      synopsis: "Ein Straßenmusiker am Grazer Schlossberg spielt eine virtuose Geigenversion eines Popklassikers. Video geht seit gestern viral, über 500.000 Views auf dem Originalkanal.",
+      notes: "Positive Story — gut für Soft-News Slot. Musiker kontaktieren für Interview?"
+    },
+    {
+      rank: 14,
+      title: "Überschwemmung in Feldkirchen nach Starkregen",
+      url: "https://www.tiktok.com/@beispiel/video/0000000000014",
+      thumbnail: "",
+      account: "feldkirchen_info",
+      views: "29.000",
+      likes: "3.200",
+      shares: "890",
+      comments: "210",
+      uploaded: "vor 19 Std.",
+      region: "Kärnten",
+      hashtags: ["#feldkirchen", "#kärnten", "#hochwasser", "#feuerwehr", "#starkregen"],
+      synopsis: "Unwetter über Feldkirchen führte zu überfluteten Kellern und gesperrten Straßen. Feuerwehr Feldkirchen pumpte ganze Nacht. Schadenslage noch unklar.",
+      notes: ""
+    },
+    {
+      rank: 15,
+      title: "Stau-Chaos in Bruck-Mürzzuschlag — Grund unklar",
+      url: "https://www.tiktok.com/@beispiel/video/0000000000015",
+      thumbnail: "",
+      account: "bruck_muerz_news",
+      views: "22.000",
+      likes: "1.900",
+      shares: "540",
+      comments: "180",
+      uploaded: "vor 23 Std.",
+      region: "Steiermark",
+      hashtags: ["#bruck", "#mürzzuschlag", "#stau", "#steiermarknews"],
+      synopsis: "Kilometerlanger Stau auf der B306 rund um Bruck-Mürzzuschlag. Ursache laut ÖAMTC unklar. Videos zeigen stillstehende Fahrzeugkolonnen über mehrere Kilometer.",
+      notes: "ÖAMTC Pressestelle kontaktieren."
+    }
+  ];
+
+  // -------------------------------------------------------
+  // Rendering
+  // -------------------------------------------------------
+  function renderFeed(data) {
+    const feed = document.getElementById('feed');
+    feed.innerHTML = '';
+    data.forEach(item => {
+    const isTop3 = item.rank <= 3;
+
+    const hashtagHTML = item.hashtags.map(h =>
+      `<span class="hashtag">${h}</span>`
+    ).join('');
+
+    const notesHTML = item.notes
+      ? `<div class="more-notes">
+           <div class="note-label">More / Notes</div>
+           <div class="note-text">${item.notes}</div>
+         </div>`
+      : `<div class="more-notes">
+           <div class="note-label">More / Notes</div>
+           <div class="note-text empty-note">—</div>
+         </div>`;
+
+    feed.innerHTML += `
+      <div class="card">
+        <div class="rank ${isTop3 ? 'top3' : ''}">${item.rank}</div>
+        <div class="thumb">
+          ${item.thumbnail
+            ? `<img src="${item.thumbnail}" alt="" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" />`
+            : ''
+          }
+          <div class="placeholder" style="${item.thumbnail ? 'display:none' : ''}">
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="white"><path d="M8 5v14l11-7z"/></svg>
+          </div>
+          <a href="${item.url}" target="_blank" class="play-btn">▶ Video öffnen</a>
+        </div>
+        <div class="content">
+          <div class="title">${item.title}</div>
+          <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+            <span class="account-chip"><span class="at">@</span>${item.account}</span>
+            <span class="badge-region" style="font-size:10px;">${item.region}</span>
+            <span style="font-size:11px;color:#999;">Hochgeladen: ${item.uploaded}</span>
+          </div>
+          <div class="synopsis">${item.synopsis}</div>
+          <div class="meta-grid">
+            <div class="meta-item"><span class="label">Views</span><span class="value">${item.views}</span></div>
+            <div class="meta-item"><span class="label">Likes</span><span class="value">${item.likes}</span></div>
+            <div class="meta-item"><span class="label">Shares</span><span class="value">${item.shares}</span></div>
+            <div class="meta-item"><span class="label">Kommentare</span><span class="value">${item.comments}</span></div>
+          </div>
+          <div class="hashtags">${hashtagHTML}</div>
+          ${notesHTML}
+        </div>
+      </div>
+    `;
+    });
+  }
+
+  renderFeed(data);
+</script>
+</body>
+</html>

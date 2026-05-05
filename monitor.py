@@ -1,6 +1,7 @@
 import asyncio
 import json
 import os
+import shutil
 import time
 import urllib.request
 from datetime import datetime, timezone
@@ -127,8 +128,8 @@ def build_output(cfg: dict, videos: list) -> dict:
     }
 
 
-def write_dashboard(output: dict, onedrive_dir: str) -> str:
-    """Write a self-contained HTML dashboard to OneDrive. Returns the output path."""
+def write_dashboard(output: dict, onedrive_dir: str, archive_path: str) -> str:
+    """Write a self-contained HTML dashboard and daily JSON to OneDrive. Returns the HTML output path."""
     with open(DASHBOARD_TEMPLATE, "r", encoding="utf-8") as f:
         html = f.read()
 
@@ -155,6 +156,7 @@ def write_dashboard(output: dict, onedrive_dir: str) -> str:
     out_path = os.path.join(onedrive_dir, "tiktok_trending_heute.html")
     with open(out_path, "w", encoding="utf-8") as f:
         f.write(html)
+    shutil.copy2(archive_path, os.path.join(onedrive_dir, os.path.basename(archive_path)))
     return out_path
 
 
@@ -236,7 +238,7 @@ async def main():
     # Write self-contained dashboard to OneDrive
     onedrive_dir = cfg.get("onedrive_output_dir", "")
     if onedrive_dir:
-        dashboard_path = write_dashboard(output, onedrive_dir)
+        dashboard_path = write_dashboard(output, onedrive_dir, archive_path)
         print(f"\nDashboard gespeichert: {dashboard_path}")
     else:
         print("\nHinweis: 'onedrive_output_dir' nicht in config.json gesetzt — Dashboard nur lokal.")

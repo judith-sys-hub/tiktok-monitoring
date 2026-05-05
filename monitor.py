@@ -2,12 +2,14 @@ import asyncio
 import json
 import os
 import time
+import urllib.request
 from datetime import datetime, timezone
 
 from TikTokApi import TikTokApi
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 CONFIG_PATH = os.path.join(BASE_DIR, "config.json")
+DASHBOARD_TEMPLATE = os.path.join(BASE_DIR, "dashboards", "dashboard_tiktok_trending.html")
 
 
 def load_config():
@@ -125,6 +127,65 @@ def build_output(cfg: dict, videos: list) -> dict:
     }
 
 
+def write_dashboard(output: dict, onedrive_dir: str) -> str:
+    """Write a self-contained HTML dashboard to OneDrive. Returns the output path."""
+    with open(DASHBOARD_TEMPLATE, "r", encoding="utf-8") as f:
+        html = f.read()
+
+    data_json = json.dumps(output["videos"], ensure_ascii=False, indent=2)
+    stand = output["meta"]["stand"]
+
+    # Inject live data after the sample data renders, overriding it
+    injection = f"""
+<script>
+  // Injected by monitor.py
+  (function() {{
+    const liveData = {data_json};
+    const d = new Date("{stand}");
+    const fmt = x => x.toLocaleString('de-AT', {{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'}});
+    document.getElementById('stand').textContent = fmt(d);
+    document.getElementById('ts').textContent = fmt(d);
+    renderFeed(liveData);
+  }})();
+</script>
+</body>"""
+    html = html.replace("</body>", injection)
+
+    os.makedirs(onedrive_dir, exist_ok=True)
+    out_path = os.path.join(onedrive_dir, "tiktok_trending_heute.html")
+    with open(out_path, "w", encoding="utf-8") as f:
+        f.write(html)
+    return out_path
+
+
+def post_to_teams(webhook_url: str, output: dict) -> None:
+    """POST a summary card to a Teams Incoming Webhook."""
+    videos = output["videos"][:3]
+    top3 = "\n\n".join(
+        f"**#{v['rank']}** {v['title'][:80]}  \n"
+        f"{v['views']} Views · {v['region']} · @{v['account']}"
+        for v in videos
+    )
+    total = len(output["videos"])
+    date_str = datetime.now().strftime("%d.%m.%Y")
+
+    payload = {
+        "@type": "MessageCard",
+        "@context": "http://schema.org/extensions",
+        "summary": f"TikTok Monitoring {date_str}",
+        "themeColor": "e63946",
+        "title": f"📊 TikTok Monitoring — {date_str}",
+        "text": f"**{total} relevante Videos** aus Kärnten & Steiermark heute\n\n{top3}\n\n→ Dashboard in SharePoint öffnen",
+    }
+    data = json.dumps(payload, ensure_ascii=False).encode("utf-8")
+    req = urllib.request.Request(
+        webhook_url,
+        data=data,
+        headers={"Content-Type": "application/json"},
+    )
+    urllib.request.urlopen(req, timeout=10)
+
+
 async def main():
     cfg = load_config()
     cutoff = int(time.time()) - cfg["hours_back"] * 3600
@@ -166,13 +227,32 @@ async def main():
 
     output = build_output(cfg, top)
 
+    # Save dated JSON for archive
     date_str = datetime.now().strftime("%Y-%m-%d")
-    out_path = os.path.join(BASE_DIR, cfg["output_dir"], f"{date_str}_data.json")
-    with open(out_path, "w", encoding="utf-8") as f:
+    archive_path = os.path.join(BASE_DIR, cfg["output_dir"], f"{date_str}_data.json")
+    with open(archive_path, "w", encoding="utf-8") as f:
         json.dump(output, f, ensure_ascii=False, indent=2)
 
-    print(f"\nFertig — {len(top)} Videos gespeichert: {out_path}")
-    print("Dashboard öffnen und JSON laden: dashboards/dashboard_tiktok_trending.html")
+    # Write self-contained dashboard to OneDrive
+    onedrive_dir = cfg.get("onedrive_output_dir", "")
+    if onedrive_dir:
+        dashboard_path = write_dashboard(output, onedrive_dir)
+        print(f"\nDashboard gespeichert: {dashboard_path}")
+    else:
+        print("\nHinweis: 'onedrive_output_dir' nicht in config.json gesetzt — Dashboard nur lokal.")
+
+    # Post Teams notification
+    webhook_url = cfg.get("teams_webhook_url", "")
+    if webhook_url:
+        try:
+            post_to_teams(webhook_url, output)
+            print("Teams-Nachricht gesendet.")
+        except Exception as e:
+            print(f"Teams-Nachricht fehlgeschlagen: {e}")
+    else:
+        print("Hinweis: 'teams_webhook_url' nicht in config.json gesetzt — kein Teams-Ping.")
+
+    print(f"Fertig — {len(top)} Videos · Archiv: {archive_path}")
 
 
 if __name__ == "__main__":

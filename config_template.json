@@ -46,6 +46,8 @@
     "shares": 0.2
   },
   "output_dir": "dashboards",
+  "onedrive_output_dir": "C:\\Users\\YOUR_USERNAME\\OneDrive - Styria-IT Solutions GmbH & Co KG\\TikTok Monitoring",
+  "teams_webhook_url": "YOUR_TEAMS_INCOMING_WEBHOOK_URL",
   "relevance": {
     "keywords_steiermark": [
       "steiermark",

@@ -24,9 +24,9 @@ def score(video: dict, weights: dict) -> float:
     likes = stats.get("diggCount", 0) or 0
     shares = stats.get("shareCount", 0) or 0
     return (
-        views * weights["views"]
-        + likes * weights["likes"]
-        + shares * weights["shares"]
+        views * weights.get("views", 0)
+        + likes * weights.get("likes", 0)
+        + shares * weights.get("shares", 0)
     )
 
 
@@ -160,7 +160,7 @@ def write_dashboard(output: dict, onedrive_dir: str, archive_path: str) -> str:
     return out_path
 
 
-def post_to_teams(webhook_url: str, output: dict) -> None:
+def post_to_teams(webhook_url: str, output: dict, max_retries: int = 3) -> None:
     """POST a summary card to a Teams Incoming Webhook."""
     videos = output["videos"][:3]
     top3 = "\n\n".join(
@@ -185,7 +185,16 @@ def post_to_teams(webhook_url: str, output: dict) -> None:
         data=data,
         headers={"Content-Type": "application/json"},
     )
-    urllib.request.urlopen(req, timeout=10)
+    last_exc = None
+    for attempt in range(1, max_retries + 1):
+        try:
+            urllib.request.urlopen(req, timeout=10)
+            return
+        except Exception as e:
+            last_exc = e
+            if attempt < max_retries:
+                time.sleep(2 ** attempt)
+    raise last_exc
 
 
 async def main():
